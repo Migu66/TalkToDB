@@ -1,0 +1,49 @@
+# === Backend (Spring Boot / Maven) ===
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# === Frontend (Node / React) ===
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# === Secretos ===
+.env
+*.env.local
+
+# === IDE: STS ===
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# === IDE: IntelliJ IDEA ===
+.idea
+*.iws
+*.iml
+*.ipr
+
+# === IDE: NetBeans ===
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# === IDE: VS Code ===
+.vscode/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+ROADMAP.md
