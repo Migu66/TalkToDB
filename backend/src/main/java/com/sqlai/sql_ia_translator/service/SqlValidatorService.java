@@ -12,7 +12,8 @@ public class SqlValidatorService {
     private static final Set<String> FORBIDDEN_KEYWORDS = Set.of(
             "INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "TRUNCATE",
             "CREATE", "GRANT", "REVOKE", "EXEC", "EXECUTE", "CALL",
-            "MERGE", "RENAME", "REPLACE", "LOAD", "IMPORT", "EXPORT"
+            "MERGE", "RENAME", "REPLACE", "LOAD", "IMPORT", "EXPORT",
+            "INTO", "ATTACH", "PRAGMA"
     );
 
     private static final Pattern WORD_BOUNDARY_PATTERN = Pattern.compile("\\b(%s)\\b".formatted(
