@@ -41,6 +41,7 @@ public class QueryController {
 
         String generatedSql = openAiService.generateSql(schema, request.question());
         sqlValidatorService.validate(generatedSql);
+        sqlValidatorService.validateAgainstSchema(generatedSql, schema);
 
         return queryExecutionService.execute(dataSource, generatedSql);
     }
