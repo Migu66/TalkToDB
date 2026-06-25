@@ -160,6 +160,14 @@ com.textosql.backend
 - **CORS**: configurar para permitir el origen del frontend React en desarrollo (ej. `http://localhost:5173` si es Vite, o `http://localhost:3000` si es CRA).
 - **Validador SQL**: implementarlo como clase independiente y testeable (`SqlValidatorService`), con tests unitarios cubriendo casos de inyección típicos (`; DROP TABLE`, `UNION`-based si se quiere ser más estricto, comentarios `--`, `/*`, palabras clave en mayúsculas/minúsculas/mixtas).
 
+### 5.4 Endurecimiento (Fase 6) — implementado
+
+- **Validación de la JDBC URL** (`JdbcUrlValidator`): whitelist de prefijos (`jdbc:mysql:`, `jdbc:postgresql:`, `jdbc:h2:`), bloqueo de credenciales embebidas y de parámetros peligrosos del driver (`allowLoadLocalInfile`, `autoDeserialize`, `socketFactory`, `INIT` de H2, etc.). Se invoca **antes** de crear el `DataSource`.
+- **Saneado de logs**: `ConnectionService.sanitizeJdbcUrl` enmascara contraseña y credenciales embebidas; la URL solo se loguea enmascarada. `ConnectionRequestDTO.toString()` oculta la contraseña. Los errores de JDBC se traducen a mensajes genéricos hacia el cliente (sin stacktraces).
+- **Credenciales en memoria**: la contraseña solo vive dentro del `HikariDataSource` del `ConnectionContext`; no se guarda como campo aparte ni se devuelve en ninguna respuesta.
+- **TTL y limpieza**: `ConnectionContext` registra `lastAccess`; `ConnectionService.purgeExpired(ttl)` cierra conexiones inactivas y `ConnectionCleanupTask` (`@Scheduled`, `@EnableScheduling`) la ejecuta periódicamente. Configurable: `app.connection.ttl-minutes` (30), `app.connection.cleanup-interval-ms` (300000).
+- **Rate limiting**: `RateLimitInterceptor` (en memoria, por IP, ventana de 1 min) sobre `POST /api/query`; responde `429` al superar el límite. Configurable: `app.ratelimit.enabled` (true), `app.ratelimit.requests-per-minute` (20).
+
 ---
 
 ## 6. Frontend (React) — pendiente de desarrollo
