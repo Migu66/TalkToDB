@@ -30,12 +30,15 @@ public class ConnectionService {
     }
 
     public String createConnection(ConnectionRequestDTO request) {
+        String safeUrl = sanitizeJdbcUrl(request.jdbcUrl());
+
         jdbcUrlValidator.validate(request.jdbcUrl());
         HikariDataSource dataSource = buildDataSource(request);
-        testConnection(dataSource);
+        testConnection(dataSource, safeUrl);
 
         String connectionId = UUID.randomUUID().toString();
         connections.put(connectionId, new ConnectionContext(dataSource));
+        log.info("Conexión creada (id={}, url={})", connectionId, safeUrl);
         return connectionId;
     }
 
@@ -84,7 +87,7 @@ public class ConnectionService {
         return new HikariDataSource(config);
     }
 
-    private void testConnection(HikariDataSource dataSource) {
+    private void testConnection(HikariDataSource dataSource, String safeUrl) {
         try (Connection conn = dataSource.getConnection()) {
             if (!conn.isValid(5)) {
                 dataSource.close();
@@ -92,7 +95,7 @@ public class ConnectionService {
             }
         } catch (SQLException e) {
             dataSource.close();
-            log.error("Fallo al conectar a la base de datos (SQLState: {})", e.getSQLState(), e);
+            log.error("Fallo al conectar a la base de datos (url={}, SQLState: {})", safeUrl, e.getSQLState(), e);
             throw new DatabaseConnectionException("No se pudo conectar a la base de datos");
         }
     }
