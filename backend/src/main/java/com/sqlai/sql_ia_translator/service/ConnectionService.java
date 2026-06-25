@@ -23,8 +23,14 @@ public class ConnectionService {
     private static final Logger log = LoggerFactory.getLogger(ConnectionService.class);
 
     private final ConcurrentMap<String, ConnectionContext> connections = new ConcurrentHashMap<>();
+    private final JdbcUrlValidator jdbcUrlValidator;
+
+    public ConnectionService(JdbcUrlValidator jdbcUrlValidator) {
+        this.jdbcUrlValidator = jdbcUrlValidator;
+    }
 
     public String createConnection(ConnectionRequestDTO request) {
+        jdbcUrlValidator.validate(request.jdbcUrl());
         HikariDataSource dataSource = buildDataSource(request);
         testConnection(dataSource);
 
