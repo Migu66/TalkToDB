@@ -41,13 +41,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DatabaseConnectionException.class)
     public ResponseEntity<ErrorResponseDTO> handleDatabaseConnection(DatabaseConnectionException ex, HttpServletRequest request) {
-        logger.error("Error de conexión a la base de datos", ex);
         return buildResponse(HttpStatus.BAD_GATEWAY, "No se pudo conectar a la base de datos", request);
     }
 
     @ExceptionHandler(OpenAiException.class)
     public ResponseEntity<ErrorResponseDTO> handleOpenAi(OpenAiException ex, HttpServletRequest request) {
-        logger.error("Error al comunicarse con OpenAI", ex);
         return buildResponse(HttpStatus.BAD_GATEWAY, "Error al generar la consulta SQL", request);
     }
 

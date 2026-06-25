@@ -5,6 +5,8 @@ import com.sqlai.sql_ia_translator.dto.ForeignKeyDTO;
 import com.sqlai.sql_ia_translator.dto.SchemaDTO;
 import com.sqlai.sql_ia_translator.dto.TableDTO;
 import com.sqlai.sql_ia_translator.exception.DatabaseConnectionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
@@ -17,6 +19,8 @@ import java.util.List;
 
 @Service
 public class SchemaExtractorService {
+
+    private static final Logger log = LoggerFactory.getLogger(SchemaExtractorService.class);
 
     public SchemaDTO extractSchema(DataSource dataSource) {
         try (Connection conn = dataSource.getConnection()) {
@@ -36,7 +40,8 @@ public class SchemaExtractorService {
 
             return new SchemaDTO(tables);
         } catch (SQLException e) {
-            throw new DatabaseConnectionException("Error al extraer el esquema de la base de datos: " + e.getMessage(), e);
+            log.error("Error al extraer el esquema (SQLState: {})", e.getSQLState(), e);
+            throw new DatabaseConnectionException("Error al extraer el esquema de la base de datos");
         }
     }
 

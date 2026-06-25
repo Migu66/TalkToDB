@@ -2,6 +2,8 @@ package com.sqlai.sql_ia_translator.service;
 
 import com.sqlai.sql_ia_translator.dto.QueryResultDTO;
 import com.sqlai.sql_ia_translator.exception.DatabaseConnectionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +13,8 @@ import java.util.Map;
 
 @Service
 public class QueryExecutionService {
+
+    private static final Logger log = LoggerFactory.getLogger(QueryExecutionService.class);
 
     private static final int DEFAULT_MAX_ROWS = 500;
     private static final int QUERY_TIMEOUT_SECONDS = 30;
@@ -38,7 +42,8 @@ public class QueryExecutionService {
 
             return new QueryResultDTO(sql, columns, rows, rows.size(), truncated);
         } catch (Exception e) {
-            throw new DatabaseConnectionException("Error al ejecutar la consulta: " + e.getMessage(), e);
+            log.error("Error al ejecutar consulta SQL", e);
+            throw new DatabaseConnectionException("Error al ejecutar la consulta");
         }
     }
 

@@ -6,6 +6,8 @@ import com.sqlai.sql_ia_translator.exception.ConnectionNotFoundException;
 import com.sqlai.sql_ia_translator.exception.DatabaseConnectionException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
@@ -17,6 +19,8 @@ import java.util.concurrent.ConcurrentMap;
 
 @Service
 public class ConnectionService {
+
+    private static final Logger log = LoggerFactory.getLogger(ConnectionService.class);
 
     private final ConcurrentMap<String, ConnectionContext> connections = new ConcurrentHashMap<>();
 
@@ -82,8 +86,18 @@ public class ConnectionService {
             }
         } catch (SQLException e) {
             dataSource.close();
-            throw new DatabaseConnectionException("No se pudo conectar a la base de datos: " + e.getMessage(), e);
+            log.error("Fallo al conectar a la base de datos (SQLState: {})", e.getSQLState(), e);
+            throw new DatabaseConnectionException("No se pudo conectar a la base de datos");
         }
+    }
+
+    static String sanitizeJdbcUrl(String jdbcUrl) {
+        if (jdbcUrl == null) {
+            return "[null]";
+        }
+        return jdbcUrl
+                .replaceAll("(password=)[^&;]*", "$1***")
+                .replaceAll("(:)[^/@:]+(@)", "$1***$2");
     }
 
     private record ConnectionContext(HikariDataSource dataSource, SchemaDTO schema) {

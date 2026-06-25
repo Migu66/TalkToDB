@@ -171,6 +171,8 @@ class OpenAiServiceTest {
 
         var ex = assertThrows(OpenAiException.class,
                 () -> openAiService.generateSql(schema, "test"));
-        assertTrue(ex.getMessage().contains("Connection refused"));
+        assertFalse(ex.getMessage().contains("Connection refused"),
+                "El mensaje no debe filtrar detalles internos del error");
+        assertEquals("Error al generar la consulta SQL", ex.getMessage());
     }
 }

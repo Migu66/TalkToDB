@@ -49,7 +49,8 @@ public class OpenAiService {
         } catch (OpenAiException e) {
             throw e;
         } catch (Exception e) {
-            throw new OpenAiException("Error al generar SQL con OpenAI: " + e.getMessage(), e);
+            log.error("Error al comunicarse con OpenAI", e);
+            throw new OpenAiException("Error al generar la consulta SQL");
         }
     }
 
