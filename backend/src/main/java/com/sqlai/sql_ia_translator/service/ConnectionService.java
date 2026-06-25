@@ -13,6 +13,10 @@ import org.springframework.stereotype.Service;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -51,8 +55,7 @@ public class ConnectionService {
     }
 
     public void storeSchema(String connectionId, SchemaDTO schema) {
-        ConnectionContext ctx = getContext(connectionId);
-        connections.put(connectionId, ctx.withSchema(schema));
+        getContext(connectionId).setSchema(schema);
     }
 
     public void removeConnection(String connectionId) {
@@ -67,11 +70,40 @@ public class ConnectionService {
         return connections.containsKey(connectionId);
     }
 
+    /**
+     * Cierra y elimina las conexiones cuyo último acceso supere el TTL indicado.
+     * Devuelve cuántas se purgaron. Lo invoca {@link ConnectionCleanupTask}.
+     */
+    public int purgeExpired(Duration ttl) {
+        Instant threshold = Instant.now().minus(ttl);
+        int removed = 0;
+        Iterator<Map.Entry<String, ConnectionContext>> it = connections.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, ConnectionContext> entry = it.next();
+            if (entry.getValue().lastAccess().isBefore(threshold)) {
+                it.remove();
+                try {
+                    entry.getValue().dataSource().close();
+                } catch (RuntimeException e) {
+                    log.warn("No se pudo cerrar el DataSource de la conexión id={}", entry.getKey(), e);
+                }
+                removed++;
+                log.info("Conexión expirada cerrada por inactividad (id={})", entry.getKey());
+            }
+        }
+        return removed;
+    }
+
+    public int activeConnections() {
+        return connections.size();
+    }
+
     private ConnectionContext getContext(String connectionId) {
         ConnectionContext ctx = connections.get(connectionId);
         if (ctx == null) {
             throw new ConnectionNotFoundException("No existe conexión con id: " + connectionId);
         }
+        ctx.touch();
         return ctx;
     }
 
@@ -109,14 +141,42 @@ public class ConnectionService {
                 .replaceAll("(:)[^/@:]+(@)", "$1***$2");
     }
 
-    private record ConnectionContext(HikariDataSource dataSource, SchemaDTO schema) {
+    /**
+     * Contexto de una conexión activa. Mantiene el DataSource, el esquema
+     * extraído y el instante del último acceso (para el TTL del Commit 31).
+     * La contraseña solo vive dentro del HikariDataSource.
+     */
+    private static final class ConnectionContext {
+
+        private final HikariDataSource dataSource;
+        private final Instant createdAt;
+        private volatile SchemaDTO schema;
+        private volatile Instant lastAccess;
 
         ConnectionContext(HikariDataSource dataSource) {
-            this(dataSource, null);
+            this.dataSource = dataSource;
+            this.createdAt = Instant.now();
+            this.lastAccess = this.createdAt;
         }
 
-        ConnectionContext withSchema(SchemaDTO schema) {
-            return new ConnectionContext(dataSource, schema);
+        HikariDataSource dataSource() {
+            return dataSource;
+        }
+
+        SchemaDTO schema() {
+            return schema;
+        }
+
+        void setSchema(SchemaDTO schema) {
+            this.schema = schema;
+        }
+
+        Instant lastAccess() {
+            return lastAccess;
+        }
+
+        void touch() {
+            this.lastAccess = Instant.now();
         }
     }
 }
