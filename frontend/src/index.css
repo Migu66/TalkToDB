@@ -1,0 +1,80 @@
+:root {
+  /* Paleta */
+  --bg: #0f1420;
+  --bg-elev: #171d2b;
+  --bg-elev-2: #1f2738;
+  --border: #2a3243;
+  --border-strong: #3a455c;
+  --text: #e6eaf2;
+  --text-muted: #9aa6bd;
+  --accent: #4f8cff;
+  --accent-strong: #3b73e0;
+  --accent-soft: rgba(79, 140, 255, 0.12);
+  --ok: #2fbf71;
+  --warn: #f2c14e;
+  --danger: #ff6b6b;
+  --danger-soft: rgba(255, 107, 107, 0.12);
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--sans);
+  background: radial-gradient(
+      1200px 600px at 100% -10%,
+      rgba(79, 140, 255, 0.08),
+      transparent 60%
+    ),
+    var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.25;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  background: var(--bg-elev-2);
+  padding: 0.1em 0.35em;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+}
+
+button {
+  font-family: inherit;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+.muted {
+  color: var(--text-muted);
+}
