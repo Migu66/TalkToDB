@@ -168,6 +168,12 @@ com.textosql.backend
 - **TTL y limpieza**: `ConnectionContext` registra `lastAccess`; `ConnectionService.purgeExpired(ttl)` cierra conexiones inactivas y `ConnectionCleanupTask` (`@Scheduled`, `@EnableScheduling`) la ejecuta periódicamente. Configurable: `app.connection.ttl-minutes` (30), `app.connection.cleanup-interval-ms` (300000).
 - **Rate limiting**: `RateLimitInterceptor` (en memoria, por IP, ventana de 1 min) sobre `POST /api/query`; responde `429` al superar el límite. Configurable: `app.ratelimit.enabled` (true), `app.ratelimit.requests-per-minute` (20).
 
+### 5.5 Tests (Fase 7) — implementado
+
+- **Unitarios** (`mvn test`, surefire): servicios, validador, DTOs, interceptor.
+- **Integración** (`mvn verify`, failsafe, sufijo `*IT`): `EndToEndIT` y `SecurityIT` con `@SpringBootTest(RANDOM_PORT)` + `TestRestTemplate` (paquete `org.springframework.boot.resttestclient` en Spring Boot 4) contra una BD H2 con datos de prueba (`src/test/resources/e2e/`), con la IA mockeada a nivel de `OpenAiService`. `SecurityIT` prueba que el SQL malicioso se rechaza con `400` y la BD no se modifica.
+- **Cobertura (JaCoCo)**: configurada en el perfil opt-in `coverage` (`./mvnw -Pcoverage verify`). ⚠️ A día de hoy JaCoCo 0.8.13 **no soporta el bytecode de Java 26** (`Unsupported class file major version 70`), así que el informe estará vacío hasta que haya una versión compatible; por eso está aislada en un perfil y no afecta al build normal.
+
 ---
 
 ## 6. Frontend (React) — pendiente de desarrollo
